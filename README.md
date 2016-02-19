@@ -14,9 +14,8 @@ compile\_commands.json can be generated via below cmake command:
 
 ## Usage
 
-Just need to add path of compile_commands.json to `cmake-compile-commands-json-files`:
+Just need to add build directory containing compile_commands.json to `cmake-compile-commands-build-directories`:
 
 ```lisp
-(setq cmake-compile-commands-json-files
-      '("/project/debug/compile_commands.json"))
+(setq cmake-compile-commands-build-directories '("/project/build"))
 ```

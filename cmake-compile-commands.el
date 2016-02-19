@@ -40,8 +40,8 @@
 (require 'projectile)
 (require 'seq)
 
-(defcustom cmake-compile-commands-json-files '()
-  "List of compile_commands.json files for multiple projects.
+(defcustom cmake-compile-commands-build-directories '()
+  "List of build directories containing compile_commands.json.
 compile_commands.json file can created by:
 
     cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1"
@@ -61,12 +61,13 @@ compile_commands.json file can created by:
          (js-data (assoc root cmake-compile-commands-json-cache)))
     (if js-data
         (setq js-data (cdr js-data))
-      (let ((json-file (cl-find-if (lambda (f) (string-match-p root f))
-                                   cmake-compile-commands-json-files)))
-        (when json-file
-          ;; (message "compile_commands.json not found, check `cmake-compile-commands-json-files'")
-          (setq js-data (json-read-file json-file))
-          (setq cmake-compile-commands-json-cache (cons (cons root js-data) cmake-compile-commands-json-cache)))))
+      (let ((json-file (concat (cl-find-if (lambda (f) (string-match-p root f))
+                                           cmake-compile-commands-build-directories)
+                               "/compile_commands.json")))
+        (unless (file-exists-p json-file)
+          (error "compile_commands.json not found, check `cmake-compile-commands-build-directories'"))
+        (setq js-data (json-read-file json-file))
+        (setq cmake-compile-commands-json-cache (cons (cons root js-data) cmake-compile-commands-json-cache))))
 
     (when js-data
       (let* ((file (file-truename (buffer-file-name)))
