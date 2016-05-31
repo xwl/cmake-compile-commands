@@ -36,6 +36,7 @@
 ;;; Code:
 
 (require 'json)
+(require 'tramp)
 
 (require 'projectile)
 (require 'seq)
@@ -70,11 +71,15 @@ compile_commands.json file can created by:
         (setq cmake-compile-commands-json-cache (cons (cons root js-data) cmake-compile-commands-json-cache))))
 
     (when js-data
-      (let* ((file (file-truename (buffer-file-name)))
-             (matched-entry
-              (cl-find-if (lambda (entry)
-                            (equal (file-truename (cdr (assq 'file entry))) file))
-                          js-data))
+      (let* ((file (file-truename
+                    (let ((f (buffer-file-name)))
+                      (if (tramp-tramp-file-p f)
+                          (with-parsed-tramp-file-name f v v-localname)
+                        f))))
+
+             (matched-entry (seq-find (lambda (entry) (equal (cdr (assq 'file entry)) file))
+                                      js-data))
+
              (cmd (cdr (assq 'command matched-entry))))
         (split-string cmd)))))
 
